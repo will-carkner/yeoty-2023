@@ -3,8 +3,8 @@ import csv
 headers = ['time', 'howth_count', 'sutton_count']
 fileName = 'data/thurs-a.csv'
 
-startH = 7
-endH = 9
+startH = 15
+endH = 17
 startM = 0
 endM = 45
 
