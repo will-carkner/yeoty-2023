@@ -1,7 +1,7 @@
 import csv
 
 headers = ['time', 'howth_count', 'sutton_count']
-fileName = 'data/test-m.csv'
+fileName = 'data/thurs-a.csv'
 
 startH = 7
 endH = 9
