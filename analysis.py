@@ -90,7 +90,8 @@ def surveyStats(survey, printStats=True):
     stats['price'] = survey[surveyHeaders['price']]
 
     if printStats:
-        print('SURVEY STATS', '-' * 20, sep='\n')
+        # make survey stats red
+        print('\033[91mSURVEY STATS\033[0m', '-' * 20, sep='\n')
         output = [
             {'Congestion rating': stats['congestion_rating']},
             {
@@ -147,7 +148,8 @@ def surveyStats(survey, printStats=True):
         ]
 
         for o in output:
-            print(*o.items(), sep=':')
+            for k, v in o.items():
+                print(f'\033[92m{k}\033[0m: \033[94m{v}\033[0m')
 
         print('-' * 20)
     return stats
