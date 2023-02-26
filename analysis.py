@@ -91,75 +91,63 @@ def surveyStats(survey, printStats=True):
 
     if printStats:
         print('SURVEY STATS', '-' * 20, sep='\n')
-        # CONGESTION
-        print(f'Congestion rating: {stats["congestion_rating"]}')
-        # REGION
-        print(
-            'Region:',
-            ', '.join(
-                [
-                    f'{k} ({round(v / len(survey) * 100, 2)}%)'
-                    for k, v in stats['region']
-                ]
-            ),
-        )
-        # FREQUENCY
-        print(
-            'Frequency:',
-            ', '.join(
-                [
-                    f'{k} ({round(v / len(survey) * 100, 2)}%)'
-                    for k, v in stats['frequency']
-                ]
-            ),
-        )
-        # ENTRY MODES
-        print(
-            'Entry modes:',
-            ', '.join(
-                [
-                    f'{k} ({round(v.mean() * 100, 2)}%)'
-                    for k, v in stats['entry_modes'].items()
-                ]
-            ),
-        )
-        # REASON
-        print(
-            'Reason:',
-            ', '.join(
-                [
-                    f'{k} ({round(v.mean() * 100, 2)}%)'
-                    for k, v in stats['reason'].items()
-                ]
-            ),
-        )
-        # SUPPORT
-        print(
-            'Support:',
-            ', '.join(
-                [
-                    f'{k} ({round(v / len(survey) * 100, 2)}%)'
-                    for k, v in stats['support']
-                ]
-            ),
-        )
-        # AVG PRICE
-        print(
-            'Avg Price:',
-            f'{stats["price"].mean().round(2)}',
-        )
-        # PRICE DISTRIBUTION
-        print(
-            'Price distribution:',
-            ', '.join(
-                [
-                    f'{k} ({round(v / len(survey) * 100, 2)}%)'
-                    for k, v in sorted(
-                        stats['price'].value_counts().to_dict().items()
-                    )
-                ]
-            ),
-        )
+        output = [
+            {'Congestion rating': stats['congestion_rating']},
+            {
+                'Region': ', '.join(
+                    [
+                        f'{k} ({round(v / len(survey) * 100, 2)}%)'
+                        for k, v in stats['region']
+                    ]
+                )
+            },
+            {
+                'Frequency': ', '.join(
+                    [
+                        f'{k} ({round(v / len(survey) * 100, 2)}%)'
+                        for k, v in stats['frequency']
+                    ]
+                )
+            },
+            {
+                'Entry modes': ', '.join(
+                    [
+                        f'{k} ({round(v.mean() * 100, 2)}%)'
+                        for k, v in stats['entry_modes'].items()
+                    ]
+                )
+            },
+            {
+                'Reason': ', '.join(
+                    [
+                        f'{k} ({round(v.mean() * 100, 2)}%)'
+                        for k, v in stats['reason'].items()
+                    ]
+                )
+            },
+            {
+                'Support': ', '.join(
+                    [
+                        f'{k} ({round(v / len(survey) * 100, 2)}%)'
+                        for k, v in stats['support']
+                    ]
+                )
+            },
+            {'Avg Price': stats['price'].mean().round(2)},
+            {
+                'Price distribution': ', '.join(
+                    [
+                        f'{k} ({round(v / len(survey) * 100, 2)}%)'
+                        for k, v in sorted(
+                            stats['price'].value_counts().to_dict().items()
+                        )
+                    ]
+                )
+            },
+        ]
+
+        for o in output:
+            print(*o.items(), sep=':')
 
         print('-' * 20)
     return stats
