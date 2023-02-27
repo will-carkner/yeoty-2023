@@ -173,12 +173,11 @@ def main():
     region = 'Malahide / Portmarnock'
     priceData = {
         k: v
-        for k, v in survey[surveyHeaders['price']][
-            survey[surveyHeaders['region']] == region
-        ]
-        .value_counts()
-        .to_dict()
-        .items()
+        for k, v in survey[surveyHeaders['price']]
+        # [
+        #     survey[surveyHeaders['region']] == region
+        # ]
+        .value_counts().to_dict().items()
         if k != 0
     }
 
