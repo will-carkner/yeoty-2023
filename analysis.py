@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 surveyHeaders = {
     # 'submissionid': 'Submission ID',
@@ -21,10 +22,10 @@ surveyHeaders = {
     'pleasure': 'Why do you usually make these journeys into Howth? (Tourism / Pleasure)',
     'other_reason': 'Why do you usually make these journeys into Howth? (Other)',
     # 'other_reason': 'Untitled short answer field (2)',
-    'congestion': 'On a scale of 1-5, how big of an issue is congestion in Howth?',
-    'support': 'Would you support congestion pricing (a daily fee to enter by car, only at peak hours) in Howth, which would lower traffic and delays?',
+    'congestion': 'On a scale of 1-5, how big of an issue is congestion in Howth? (5 being the most)',
+    'support': 'Would you support congestion pricing (a daily fee to enter by car, only at peak hours) in Howth, which would lower traffic and delays? (only for non-residents)',
     # 'Untitled short answer field (3)',
-    'price': 'If congestion pricing was implemented, what is the maximum price (€) you would pay before stopping driving to enter Howth?',
+    'price': 'If congestion pricing was implemented, what is the maximum price (€) you would pay before stopping driving to enter Howth through Sutton Cross?',
     # 'Any other comments?',
 }
 
@@ -41,11 +42,6 @@ def readCarData():
     return days
 
 
-def readSurveyData():
-    survey = pd.read_csv('data/init-survey.csv')
-    return survey
-
-
 def surveyStats(survey, printStats=True):
     stats = {}
 
@@ -55,13 +51,11 @@ def surveyStats(survey, printStats=True):
     )
 
     # REGION
-    stats['region'] = (
-        survey[surveyHeaders['region']].value_counts().to_dict().items()
-    )
+    stats['region'] = survey[surveyHeaders['region']].value_counts().to_dict()
 
     # FREQUENCY
     stats['frequency'] = (
-        survey[surveyHeaders['frequency']].value_counts().to_dict().items()
+        survey[surveyHeaders['frequency']].value_counts().to_dict()
     )
 
     # ENTRY MODES
@@ -98,7 +92,7 @@ def surveyStats(survey, printStats=True):
                 'Region': ', '.join(
                     [
                         f'{k} ({round(v / len(survey) * 100, 2)}%)'
-                        for k, v in stats['region']
+                        for k, v in stats['region'].items()
                     ]
                 )
             },
@@ -106,7 +100,7 @@ def surveyStats(survey, printStats=True):
                 'Frequency': ', '.join(
                     [
                         f'{k} ({round(v / len(survey) * 100, 2)}%)'
-                        for k, v in stats['frequency']
+                        for k, v in stats['frequency'].items()
                     ]
                 )
             },
@@ -155,6 +149,10 @@ def surveyStats(survey, printStats=True):
     return stats
 
 
+def calculateCorrelations(stats, printStats=True):
+    pass
+
+
 def calculateElasticity(base_demand, priceData):
     def getPercentAbovePrice(price):
         return sum([priceData[p] for p in priceData if p > price]) / total
@@ -166,32 +164,36 @@ def calculateElasticity(base_demand, priceData):
 
 def main():
     days = readCarData()
-    survey = readSurveyData()
+    survey = pd.read_csv('data/init-survey.csv')
     stats = surveyStats(survey, printStats=True)
 
-    base_demand = sum(days[0]['total_count'])
-    region = 'Malahide / Portmarnock'
-    priceData = {
-        k: v
-        for k, v in survey[surveyHeaders['price']]
-        # [
-        #     survey[surveyHeaders['region']] == region
-        # ]
-        .value_counts().to_dict().items()
-        if k != 0
-    }
-
-    prices, demand = calculateElasticity(base_demand, priceData)
-
     fig, ax = plt.subplots()
-    ax.plot(
-        demand,
-        prices,
-        label='All',
-    )
-    ax.set_xlabel('Demand')
-    ax.set_ylabel('Price')
+
+    base_demand = sum(days[0]['total_count'])
+    regions = list(stats['region'].keys()) + ['All']
+
+    for r in regions:
+        priceData = {
+            k: v
+            for k, v in survey[surveyHeaders['price']][
+                survey[surveyHeaders['region']] == r or r == 'All'
+            ]
+            .value_counts()
+            .to_dict()
+            .items()
+            if k != 0
+        }
+        if not priceData:
+            continue
+
+        prices, demand = calculateElasticity(base_demand, priceData)
+
+        ax.plot(demand, prices, label=r)
+
+    ax.set_ylabel('Price (€)')
+    ax.set_xlabel('Quantity (Cars)')
     ax.set_title('Price Elasticity of Demand')
+
     ax.legend()
     plt.show()
 
