@@ -24,7 +24,7 @@ surveyHeaders = {
     'congestion': 'On a scale of 1-5, how big of an issue is congestion in Howth?',
     'support': 'Would you support congestion pricing (a daily fee to enter by car, only at peak hours) in Howth, which would lower traffic and delays?',
     # 'Untitled short answer field (3)',
-    'price': 'If congestion pricing was implemented, what is the maximum price (€) you would pay before stopping driving to enter Howth? ',
+    'price': 'If congestion pricing was implemented, what is the maximum price (€) you would pay before stopping driving to enter Howth?',
     # 'Any other comments?',
 }
 
@@ -155,15 +155,45 @@ def surveyStats(survey, printStats=True):
     return stats
 
 
+def calculateElasticity(base_demand, priceData):
+    def getPercentAbovePrice(price):
+        return sum([priceData[p] for p in priceData if p > price]) / total
+
+    total = sum(priceData.values())
+    prices = list(range(10))
+    return prices, [base_demand * getPercentAbovePrice(p) for p in prices]
+
+
 def main():
     days = readCarData()
     survey = readSurveyData()
     stats = surveyStats(survey, printStats=True)
 
-    # for cars in days:
-    #     cars.plot()
-    #     plt.title('Vehicle Count')
-    #     plt.show()
+    base_demand = sum(days[0]['total_count'])
+    region = 'Malahide / Portmarnock'
+    priceData = {
+        k: v
+        for k, v in survey[surveyHeaders['price']]
+        # [
+        #     survey[surveyHeaders['region']] == region
+        # ]
+        .value_counts().to_dict().items()
+        if k != 0
+    }
+
+    prices, demand = calculateElasticity(base_demand, priceData)
+
+    fig, ax = plt.subplots()
+    ax.plot(
+        demand,
+        prices,
+        label='All',
+    )
+    ax.set_xlabel('Demand')
+    ax.set_ylabel('Price')
+    ax.set_title('Price Elasticity of Demand')
+    ax.legend()
+    plt.show()
 
 
 if __name__ == '__main__':
