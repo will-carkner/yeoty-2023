@@ -176,7 +176,7 @@ def main():
         priceData = {
             k: v
             for k, v in survey[surveyHeaders['price']][
-                survey[surveyHeaders['region']] == r or r == 'All'
+                survey[surveyHeaders['region']] == r
             ]
             .value_counts()
             .to_dict()
