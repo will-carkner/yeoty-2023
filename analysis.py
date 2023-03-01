@@ -200,9 +200,7 @@ def calculateCorrelations(survey, stats, printStats=True):
         )
     )
     congestion = np.array(survey[sh['congestion']])
-
     prices = np.array(survey[sh['price']])
-    # if there is missing data fill in with False
     reasons = {
         'work': survey[sh['work']].fillna(False),
         'kids': survey[sh['kids']].fillna(False),
@@ -210,23 +208,19 @@ def calculateCorrelations(survey, stats, printStats=True):
         'otherReason': survey[sh['other_reason']].fillna(False),
     }
 
-    cors['noCar-support'] = np.corrcoef(transport_modes['noCar'], support)[0][
-        1
-    ]
-    cors['noCar-frequency'] = np.corrcoef(transport_modes['noCar'], frequency)[
-        0
-    ][1]
-    cors['noCar-congestion'] = np.corrcoef(
-        transport_modes['noCar'], congestion
-    )[0][1]
-
-    cors['car+-support'] = np.corrcoef(transport_modes['car+'], support)[0][1]
-    cors['car+-frequency'] = np.corrcoef(transport_modes['car+'], frequency)[
-        0
-    ][1]
-    cors['car+-congestion'] = np.corrcoef(transport_modes['car+'], congestion)[
-        0
-    ][1]
+    for mode in transport_modes:
+        cors[f'{mode}-support'] = np.corrcoef(transport_modes[mode], support)[
+            0
+        ][1]
+        cors[f'{mode}-frequency'] = np.corrcoef(
+            transport_modes[mode], frequency
+        )[0][1]
+        cors[f'{mode}-congestion'] = np.corrcoef(
+            transport_modes[mode], congestion
+        )[0][1]
+        cors[f'{mode}-price'] = np.corrcoef(
+            transport_modes[mode][prices > 0], prices[prices > 0]
+        )[0][1]
 
     cors['congestion-support'] = np.corrcoef(congestion, support)[0][1]
     cors['congestion-price'] = np.corrcoef(
@@ -235,6 +229,10 @@ def calculateCorrelations(survey, stats, printStats=True):
 
     cors['frequency-congestion'] = np.corrcoef(frequency, congestion)[0][1]
     cors['frequency-support'] = np.corrcoef(frequency, support)[0][1]
+
+    cors['support-price'] = np.corrcoef(
+        support[prices > 0], prices[prices > 0]
+    )[0][1]
 
     for r in regions:
         df = survey[sh['region']] == r
@@ -264,22 +262,40 @@ def calculateCorrelations(survey, stats, printStats=True):
         cors[f'{reason}-frequency'] = np.corrcoef(reasons[reason], frequency)[
             0
         ][1]
+        for mode in transport_modes:
+            cors[f'{reason}-{mode}'] = np.corrcoef(
+                reasons[reason], transport_modes[mode]
+            )[0][1]
 
     if printStats:
         print('\033[91mCORRELATIONS\033[0m', '-' * 20, sep='\n')
         output = [
-            {'No car - support': cors['noCar-support'].round(2)},
-            {'No car - frequency': cors['noCar-frequency'].round(2)},
-            {'No car - congestion': cors['noCar-congestion'].round(2)},
+            {
+                f'{mode} - support': cors[f'{mode}-support'].round(2)
+                for mode in transport_modes
+            },
             {'-': '-'},
-            {'Car+ - support': cors['car+-support'].round(2)},
-            {'Car+ - frequency': cors['car+-frequency'].round(2)},
-            {'Car+ - congestion': cors['car+-congestion'].round(2)},
+            {
+                f'{mode} - frequency': cors[f'{mode}-frequency'].round(2)
+                for mode in transport_modes
+            },
+            {'-': '-'},
+            {
+                f'{mode} - congestion': cors[f'{mode}-congestion'].round(2)
+                for mode in transport_modes
+            },
+            {'-': '-'},
+            {
+                f'{mode} - price': cors[f'{mode}-price'].round(2)
+                for mode in transport_modes
+            },
             {'-': '-'},
             {'Congestion - support': cors['congestion-support'].round(2)},
             {'Congestion - price': cors['congestion-price'].round(2)},
+            {'-': '-'},
             {'Frequency - congestion': cors['frequency-congestion'].round(2)},
             {'Frequency - support': cors['frequency-support'].round(2)},
+            {'Support - price': cors['support-price'].round(2)},
             {'-': '-'},
             {f'{r} - support': cors[f'{r}-support'].round(2) for r in regions},
             {'-': '-'},
@@ -326,6 +342,12 @@ def calculateCorrelations(survey, stats, printStats=True):
                 f'{reason} - frequency': cors[f'{reason}-frequency'].round(2)
                 for reason in reasons
             },
+            {'-': '-'},
+            {
+                f'{reason} - {mode}': cors[f'{reason}-{mode}'].round(2)
+                for reason in reasons
+                for mode in transport_modes
+            },
         ]
         for o in output:
             for k, v in o.items():
@@ -346,7 +368,7 @@ def main():
 
     cors = calculateCorrelations(survey, stats, printStats=True)
 
-    # exit(0)
+    exit(0)
     fig, ax = plt.subplots()
 
     base_demand = sum(days[0]['total_count'])
