@@ -29,6 +29,7 @@ sh = {
     'price': 'If congestion pricing was implemented, what is the maximum price (€) you would pay before stopping driving to enter Howth through Sutton Cross?',
     # 'Any other comments?',
 }
+regions = []
 
 
 def readCarData():
@@ -211,6 +212,7 @@ def calculateCorrelations(survey, stats, printStats=True):
 
     cors['frequency-congestion'] = np.corrcoef(frequency, congestion)[0][1]
     cors['frequency-support'] = np.corrcoef(frequency, support)[0][1]
+    print(regions)
 
     if printStats:
         print('\033[91mCORRELATIONS\033[0m', '-' * 20, sep='\n')
@@ -236,16 +238,18 @@ def calculateCorrelations(survey, stats, printStats=True):
 def main():
     days = readCarData()
     survey = pd.read_csv('data/init-survey.csv')
+
     stats = surveyStats(survey, printStats=True)
+    regions = list(stats['region'].keys())
+
     cors = calculateCorrelations(survey, stats, printStats=True)
 
     exit(0)
     fig, ax = plt.subplots()
 
     base_demand = sum(days[0]['total_count'])
-    regions = list(stats['region'].keys()) + ['All']
 
-    for r in regions:
+    for r in regions + ['All']:
         priceData = {
             k: v
             for k, v in survey[sh['price']][survey[sh['region']] == r]
