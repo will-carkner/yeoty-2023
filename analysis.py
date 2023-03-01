@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
-surveyHeaders = {
+sh = {
     # 'submissionid': 'Submission ID',
     # 'respon'Respondent ID',
     'timestamp': 'Submitted at',
@@ -46,42 +47,36 @@ def surveyStats(survey, printStats=True):
     stats = {}
 
     # CONGESTION
-    stats['congestion_rating'] = (
-        survey[surveyHeaders['congestion']].mean().round(2)
-    )
+    stats['congestion_rating'] = survey[sh['congestion']].mean().round(2)
 
     # REGION
-    stats['region'] = survey[surveyHeaders['region']].value_counts().to_dict()
+    stats['region'] = survey[sh['region']].value_counts().to_dict()
 
     # FREQUENCY
-    stats['frequency'] = (
-        survey[surveyHeaders['frequency']].value_counts().to_dict()
-    )
+    stats['frequency'] = survey[sh['frequency']].value_counts().to_dict()
 
     # ENTRY MODES
     stats['entry_modes'] = {
-        'car': survey[surveyHeaders['car']],
-        'bus': survey[surveyHeaders['bus']],
-        'train': survey[surveyHeaders['train']],
-        'bike': survey[surveyHeaders['bike']],
-        'walk': survey[surveyHeaders['walk']],
+        'car': survey[sh['car']],
+        'bus': survey[sh['bus']],
+        'train': survey[sh['train']],
+        'bike': survey[sh['bike']],
+        'walk': survey[sh['walk']],
     }
 
     # REASONS
     stats['reason'] = {
-        'work': survey[surveyHeaders['work']],
-        'kids': survey[surveyHeaders['kids']],
-        'pleasure': survey[surveyHeaders['pleasure']],
-        'other': survey[surveyHeaders['other_reason']],
+        'work': survey[sh['work']],
+        'kids': survey[sh['kids']],
+        'pleasure': survey[sh['pleasure']],
+        'other': survey[sh['other_reason']],
     }
 
     # SUPPORT
-    stats['support'] = (
-        survey[surveyHeaders['support']].value_counts().to_dict().items()
-    )
+    stats['support'] = survey[sh['support']].value_counts().to_dict()
     # PRICE
     # sort by price by keys
-    stats['price'] = survey[surveyHeaders['price']]
+    stats['price'] = survey[sh['price']]
 
     if printStats:
         # make survey stats red
@@ -124,7 +119,7 @@ def surveyStats(survey, printStats=True):
                 'Support': ', '.join(
                     [
                         f'{k} ({round(v / len(survey) * 100, 2)}%)'
-                        for k, v in stats['support']
+                        for k, v in stats['support'].items()
                     ]
                 )
             },
@@ -149,10 +144,6 @@ def surveyStats(survey, printStats=True):
     return stats
 
 
-def calculateCorrelations(stats, printStats=True):
-    pass
-
-
 def calculateElasticity(base_demand, priceData):
     def getPercentAbovePrice(price):
         return sum([priceData[p] for p in priceData if p > price]) / total
@@ -162,11 +153,93 @@ def calculateElasticity(base_demand, priceData):
     return prices, [base_demand * getPercentAbovePrice(p) for p in prices]
 
 
+def calculateCorrelations(survey, stats, printStats=True):
+    cors = {}
+
+    noCars = np.array(list(map(lambda x: not x, survey[sh['car']])))
+    carPlus = np.array(
+        list(
+            map(
+                lambda x: x[0] and x[1],
+                zip(
+                    survey[sh['car']],
+                    survey[sh['bus']]
+                    | survey[sh['train']]
+                    | survey[sh['bike']]
+                    | survey[sh['walk']],
+                ),
+            )
+        )
+    )
+
+    support = np.array(
+        list(
+            map(lambda x: True if x == 'Yes' else False, survey[sh['support']])
+        )
+    )
+    frequency = np.array(
+        list(
+            map(
+                lambda x: {
+                    'Rarely or never': 1,
+                    'Once a month': 2,
+                    'Once a week': 3,
+                    'A few times a week': 4,
+                    'Every weekday': 5,
+                    'Daily': 6,
+                }[x],
+                survey[sh['frequency']],
+            )
+        )
+    )
+    congestion = np.array(survey[sh['congestion']])
+
+    prices = np.array(survey[sh['price']])
+
+    cors['noCar-support'] = np.corrcoef(noCars, support)[0][1]
+    cors['noCar-frequency'] = np.corrcoef(noCars, frequency)[0][1]
+    cors['noCar-congestion'] = np.corrcoef(noCars, congestion)[0][1]
+
+    cors['car+-support'] = np.corrcoef(carPlus, support)[0][1]
+    cors['car+-frequency'] = np.corrcoef(carPlus, frequency)[0][1]
+    cors['car+-congestion'] = np.corrcoef(carPlus, congestion)[0][1]
+
+    cors['congestion-support'] = np.corrcoef(congestion, support)[0][1]
+    cors['congestion-price'] = np.corrcoef(
+        congestion[prices > 0], prices[prices > 0]
+    )[0][1]
+
+    cors['frequency-congestion'] = np.corrcoef(frequency, congestion)[0][1]
+    cors['frequency-support'] = np.corrcoef(frequency, support)[0][1]
+
+    if printStats:
+        print('\033[91mCORRELATIONS\033[0m', '-' * 20, sep='\n')
+        output = [
+            {'No car - support': cors['noCar-support'].round(2)},
+            {'No car - frequency': cors['noCar-frequency'].round(2)},
+            {'No car - congestion': cors['noCar-congestion'].round(2)},
+            {'Car+ - support': cors['car+-support'].round(2)},
+            {'Car+ - frequency': cors['car+-frequency'].round(2)},
+            {'Car+ - congestion': cors['car+-congestion'].round(2)},
+            {'Congestion - support': cors['congestion-support'].round(2)},
+            {'Congestion - price': cors['congestion-price'].round(2)},
+            {'Frequency - congestion': cors['frequency-congestion'].round(2)},
+            {'Frequency - support': cors['frequency-support'].round(2)},
+        ]
+        for o in output:
+            for k, v in o.items():
+                print(f'\033[92m{k}\033[0m: \033[94m{v}\033[0m')
+
+        print('-' * 20)
+
+
 def main():
     days = readCarData()
     survey = pd.read_csv('data/init-survey.csv')
     stats = surveyStats(survey, printStats=True)
+    cors = calculateCorrelations(survey, stats, printStats=True)
 
+    exit(0)
     fig, ax = plt.subplots()
 
     base_demand = sum(days[0]['total_count'])
@@ -175,9 +248,7 @@ def main():
     for r in regions:
         priceData = {
             k: v
-            for k, v in survey[surveyHeaders['price']][
-                survey[surveyHeaders['region']] == r
-            ]
+            for k, v in survey[sh['price']][survey[sh['region']] == r]
             .value_counts()
             .to_dict()
             .items()
