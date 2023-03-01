@@ -340,11 +340,13 @@ def main():
     survey = pd.read_csv('data/init-survey.csv')
 
     stats = surveyStats(survey, printStats=True)
-    regions = list(stats['region'].keys())
+    regions = [
+        r for r in list(stats['region'].keys()) if stats['region'][r] > 5
+    ]
 
     cors = calculateCorrelations(survey, stats, printStats=True)
 
-    exit(0)
+    # exit(0)
     fig, ax = plt.subplots()
 
     base_demand = sum(days[0]['total_count'])
@@ -352,7 +354,11 @@ def main():
     for r in regions + ['All']:
         priceData = {
             k: v
-            for k, v in survey[sh['price']][survey[sh['region']] == r]
+            for k, v in (
+                survey[sh['price']][survey[sh['region']] == r]
+                if r != 'All'
+                else survey[sh['price']]
+            )
             .value_counts()
             .to_dict()
             .items()
