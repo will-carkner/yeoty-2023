@@ -196,6 +196,9 @@ def calculateCorrelations(survey, stats, printStats=True):
     congestion = np.array(survey[sh['congestion']])
 
     prices = np.array(survey[sh['price']])
+    work = np.array(survey[sh['work']])
+    kids = np.array(survey[sh['kids']])
+    otherReason = np.array(survey[sh['other_reason']])
 
     cors['noCar-support'] = np.corrcoef(noCars, support)[0][1]
     cors['noCar-frequency'] = np.corrcoef(noCars, frequency)[0][1]
@@ -212,7 +215,14 @@ def calculateCorrelations(survey, stats, printStats=True):
 
     cors['frequency-congestion'] = np.corrcoef(frequency, congestion)[0][1]
     cors['frequency-support'] = np.corrcoef(frequency, support)[0][1]
-    print(regions)
+
+    for r in regions:
+        df = survey[sh['region']] == r
+        cors[f'{r}-support'] = np.corrcoef(df, support)[0][1]
+        cors[f'{r}-price'] = np.corrcoef(df[prices > 0], prices[prices > 0])[
+            0
+        ][1]
+        # cors[f'{r}-reason'] =
 
     if printStats:
         print('\033[91mCORRELATIONS\033[0m', '-' * 20, sep='\n')
@@ -220,13 +230,19 @@ def calculateCorrelations(survey, stats, printStats=True):
             {'No car - support': cors['noCar-support'].round(2)},
             {'No car - frequency': cors['noCar-frequency'].round(2)},
             {'No car - congestion': cors['noCar-congestion'].round(2)},
+            {'-': '-'},
             {'Car+ - support': cors['car+-support'].round(2)},
             {'Car+ - frequency': cors['car+-frequency'].round(2)},
             {'Car+ - congestion': cors['car+-congestion'].round(2)},
+            {'-': '-'},
             {'Congestion - support': cors['congestion-support'].round(2)},
             {'Congestion - price': cors['congestion-price'].round(2)},
             {'Frequency - congestion': cors['frequency-congestion'].round(2)},
             {'Frequency - support': cors['frequency-support'].round(2)},
+            {'-': '-'},
+            {f'{r} - support': cors[f'{r}-support'].round(2) for r in regions},
+            {'-': '-'},
+            {f'{r} - price': cors[f'{r}-price'].round(2) for r in regions},
         ]
         for o in output:
             for k, v in o.items():
@@ -236,6 +252,7 @@ def calculateCorrelations(survey, stats, printStats=True):
 
 
 def main():
+    global regions
     days = readCarData()
     survey = pd.read_csv('data/init-survey.csv')
 
