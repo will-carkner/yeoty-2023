@@ -358,7 +358,7 @@ def calculateCorrelations(survey, stats, printStats=True):
 
 def main():
     global regions
-    days = readCarData()
+    periods = readCarData()
     survey = pd.read_csv('data/init-survey.csv')
 
     stats = surveyStats(survey, printStats=True)
@@ -368,37 +368,48 @@ def main():
 
     cors = calculateCorrelations(survey, stats, printStats=True)
 
-    exit(0)
-    fig, ax = plt.subplots()
+    # create a graph of morning days
+    # for i, period in enumerate(periods):
+    #     fig, ax = plt.subplots()
+    #     # period = period.resample('10T').sum()
+    #     # print(period)
+    #     ax.plot(period['total_count'], label='Total')
+    #     ax.set_ylabel('Cars')
+    #     ax.set_xlabel('Time')
+    #     ax.set_title('Morning Traffic' if i == 0 else 'Evening Traffic')
+    # plt.show()
 
-    base_demand = sum(days[0]['total_count'])
+    # elasticity graph
+    # fig, ax = plt.subplots()
 
-    for r in regions + ['All']:
-        priceData = {
-            k: v
-            for k, v in (
-                survey[sh['price']][survey[sh['region']] == r]
-                if r != 'All'
-                else survey[sh['price']]
-            )
-            .value_counts()
-            .to_dict()
-            .items()
-            if k != 0
-        }
-        if not priceData:
-            continue
+    # base_demand = sum(periods[0]['total_count'])
 
-        prices, demand = calculateElasticity(base_demand, priceData)
+    # for r in regions + ['All']:
+    #     priceData = {
+    #         k: v
+    #         for k, v in (
+    #             survey[sh['price']][survey[sh['region']] == r]
+    #             if r != 'All'
+    #             else survey[sh['price']]
+    #         )
+    #         .value_counts()
+    #         .to_dict()
+    #         .items()
+    #         if k != 0
+    #     }
+    #     if not priceData:
+    #         continue
 
-        ax.plot(demand, prices, label=r)
+    #     prices, demand = calculateElasticity(base_demand, priceData)
 
-    ax.set_ylabel('Price (€)')
-    ax.set_xlabel('Quantity (Cars)')
-    ax.set_title('Price Elasticity of Demand')
+    #     ax.plot(demand, prices, label=r)
 
-    ax.legend()
-    plt.show()
+    # ax.set_ylabel('Price (€)')
+    # ax.set_xlabel('Quantity (Cars)')
+    # ax.set_title('Price Elasticity of Demand')
+
+    # ax.legend()
+    # plt.show()
 
 
 if __name__ == '__main__':
