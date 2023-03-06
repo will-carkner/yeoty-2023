@@ -369,6 +369,10 @@ def main():
 
     cors = calculateCorrelations(survey, stats, printStats=True)
 
+    # calculate total amount of cars
+    # totalCars = sum([p['total_count'].sum() for p in periods])
+    # print('{:,}'.format(totalCars * 5 * 2 * 52))
+
     # calculate how many times more likely non-drivers are to support congestion pricing
     # nonDriverSupport = np.array(
     #     list(
