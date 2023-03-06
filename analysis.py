@@ -370,8 +370,23 @@ def main():
     cors = calculateCorrelations(survey, stats, printStats=True)
 
     # calculate how many times more likely non-drivers are to support congestion pricing
-    noCar = survey[sh['car']]
-    print(noCar)
+    # nonDriverSupport = np.array(
+    #     list(
+    #         map(
+    #             lambda x: True if x == 'Yes' else False,
+    #             survey[survey[sh['car']] == 0][sh['support']],
+    #         )
+    #     )
+    # ).mean()
+    # driverSupport = np.array(
+    #     list(
+    #         map(
+    #             lambda x: True if x == 'Yes' else False,
+    #             survey[survey[sh['car']] == 1][sh['support']],
+    #         )
+    #     )
+    # ).mean()
+    # print(nonDriverSupport / driverSupport)
 
     # create a graph of morning days
     # for i, period in enumerate(periods):
