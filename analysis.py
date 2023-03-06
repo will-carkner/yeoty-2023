@@ -360,6 +360,7 @@ def main():
     global regions
     periods = readCarData()
     survey = pd.read_csv('data/init-survey.csv')
+    print(len(survey))
 
     stats = surveyStats(survey, printStats=True)
     regions = [
