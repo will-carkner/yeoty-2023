@@ -1,5 +1,15 @@
-# Investigating congestion pricing in Irish cities
+# The Effects of Congestion Pricing in Ireland
 
-This repo looks into the effects of congestion pricing in Irish cities, and it holds all of the data we have gathered ourselves. 
+This repository looks into the effects of congestion pricing in Irish cities, and it holds all of the data we have gathered ourselves, both through manual car counts and surveys. 
 
-The main script, `analysis.py` determines the elasticity of congestion pricing in Howth, based on both survey data and car counts.
+## Purpose 
+
+The main script, `analysis.py` returns a graph showing the elasticity of congestion pricing in Howth, based on both survey data and car counts. 
+
+It also calculates various correlations between data points, which we reference in our paper.
+
+## Our Research
+
+[Research Paper Link](https://docs.google.com/document/d/1FjsDhGm6J9nHkFNtaCQ_qKyvwh6CuNtaVoSa6wJfzNY/edit?usp=sharing)
+
+[Survey Link](https://tally.so/forms/w4Q7ZO/)
