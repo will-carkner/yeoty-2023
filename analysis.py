@@ -369,6 +369,10 @@ def main():
 
     cors = calculateCorrelations(survey, stats, printStats=True)
 
+    # calculate how many times more likely non-drivers are to support congestion pricing
+    noCar = survey[sh['car']]
+    print(noCar)
+
     # create a graph of morning days
     # for i, period in enumerate(periods):
     #     fig, ax = plt.subplots()
