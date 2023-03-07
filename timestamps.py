@@ -1,3 +1,5 @@
+# this is a helper file that helped with inputting the car counts
+
 import csv
 
 headers = ['time', 'howth_count', 'sutton_count']

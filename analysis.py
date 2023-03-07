@@ -1,9 +1,9 @@
 import warnings
 
+# from tabulate import tabulate
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 warnings.filterwarnings('ignore')
 
@@ -274,81 +274,109 @@ def calculateCorrelations(survey, stats, printStats=True):
                 f'{mode} - support': cors[f'{mode}-support'].round(2)
                 for mode in transport_modes
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{mode} - frequency': cors[f'{mode}-frequency'].round(2)
                 for mode in transport_modes
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{mode} - congestion': cors[f'{mode}-congestion'].round(2)
                 for mode in transport_modes
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{mode} - price': cors[f'{mode}-price'].round(2)
                 for mode in transport_modes
             },
-            {'-': '-'},
-            {'Congestion - support': cors['congestion-support'].round(2)},
-            {'Congestion - price': cors['congestion-price'].round(2)},
-            {'-': '-'},
-            {'Frequency - congestion': cors['frequency-congestion'].round(2)},
-            {'Frequency - support': cors['frequency-support'].round(2)},
+            # {'-': '-'},
+            # {'Congestion - support': cors['congestion-support'].round(2)},
+            # {'Congestion - price': cors['congestion-price'].round(2)},
+            {
+                f'Congestion - {x}': cors[f'congestion-{x}'].round(2)
+                for x in ['support', 'price']
+            },
+            {
+                f'Frequency - {x}': cors[f'frequency-{x}'].round(2)
+                for x in ['congestion', 'support']
+            },
+            # {'-': '-'},
+            # {'Frequency - congestion': cors['frequency-congestion'].round(2)},
+            # {'Frequency - support': cors['frequency-support'].round(2)},
             {'Support - price': cors['support-price'].round(2)},
-            {'-': '-'},
+            # {'-': '-'},
             {f'{r} - support': cors[f'{r}-support'].round(2) for r in regions},
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{r} - congestion': cors[f'{r}-congestion'].round(2)
                 for r in regions
             },
-            {'-': '-'},
+            # {'-': '-'},
             {f'{r} - price': cors[f'{r}-price'].round(2) for r in regions},
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{r} - {reason}': cors[f'{r}-{reason}'].round(2)
                 for r in regions
                 for reason in reasons
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{r} - {mode}': cors[f'{r}-{mode}'].round(2)
                 for r in regions
                 for mode in transport_modes
             },
-            {'-': '(frequency is inflated bc howth people will say daily)'},
+            # {
+            #     '-': '-'
+            # },  #'(frequency is inflated bc howth people will say daily)'},
             {
                 f'{r} - frequency': cors[f'{r}-frequency'].round(2)
                 for r in regions
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{reason} - support': cors[f'{reason}-support'].round(2)
                 for reason in reasons
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{reason} - congestion': cors[f'{reason}-congestion'].round(2)
                 for reason in reasons
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{reason} - price': cors[f'{reason}-price'].round(2)
                 for reason in reasons
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{reason} - frequency': cors[f'{reason}-frequency'].round(2)
                 for reason in reasons
             },
-            {'-': '-'},
+            # {'-': '-'},
             {
                 f'{reason} - {mode}': cors[f'{reason}-{mode}'].round(2)
                 for reason in reasons
                 for mode in transport_modes
             },
         ]
+
+        # table code
+        # output_table = []
+        # for o in output:
+        #     row = []
+        #     for k, v in o.items():
+        #         row.append([k, v])
+        #         # output_table.append([k, v])
+        #     output_table.append(row)
+
+        # print(
+        #     tabulate(
+        #         output_table,
+        #         headers=['', '', ''],
+        #         tablefmt='fancy_grid',
+        #     )
+        # )
+
         for o in output:
             for k, v in o.items():
                 print(f'\033[92m{k}\033[0m: \033[94m{v}\033[0m')
@@ -359,8 +387,8 @@ def calculateCorrelations(survey, stats, printStats=True):
 def main():
     global regions
     periods = readCarData()
-    survey = pd.read_csv('data/init-survey.csv')
-    print(len(survey))
+    survey = pd.read_csv('data/survey.csv')
+    # print(len(survey))
 
     stats = surveyStats(survey, printStats=True)
     regions = [
@@ -404,36 +432,36 @@ def main():
     # plt.show()
 
     # elasticity graph
-    # fig, ax = plt.subplots()
+    fig, ax = plt.subplots()
 
-    # base_demand = sum(periods[0]['total_count'])
+    base_demand = sum(periods[0]['total_count'])
 
-    # for r in regions + ['All']:
-    #     priceData = {
-    #         k: v
-    #         for k, v in (
-    #             survey[sh['price']][survey[sh['region']] == r]
-    #             if r != 'All'
-    #             else survey[sh['price']]
-    #         )
-    #         .value_counts()
-    #         .to_dict()
-    #         .items()
-    #         if k != 0
-    #     }
-    #     if not priceData:
-    #         continue
+    for r in regions + ['All']:
+        priceData = {
+            k: v
+            for k, v in (
+                survey[sh['price']][survey[sh['region']] == r]
+                if r != 'All'
+                else survey[sh['price']]
+            )
+            .value_counts()
+            .to_dict()
+            .items()
+            if k != 0
+        }
+        if not priceData:
+            continue
 
-    #     prices, demand = calculateElasticity(base_demand, priceData)
+        prices, demand = calculateElasticity(base_demand, priceData)
 
-    #     ax.plot(demand, prices, label=r)
+        ax.plot(demand, prices, label=r)
 
-    # ax.set_ylabel('Price (€)')
-    # ax.set_xlabel('Quantity (Cars)')
-    # ax.set_title('Price Elasticity of Demand')
+    ax.set_ylabel('Price (€)')
+    ax.set_xlabel('Quantity (Cars)')
+    ax.set_title('Price Elasticity of Demand')
 
-    # ax.legend()
-    # plt.show()
+    ax.legend()
+    plt.show()
 
 
 if __name__ == '__main__':
