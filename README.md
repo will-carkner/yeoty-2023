@@ -1,6 +1,6 @@
-# The Effects of Congestion Pricing in Ireland
+# Driving Change: The Potential for Congestion Pricing in Irish Cities
 
-This repository looks into the effects of congestion pricing in Irish cities, and it holds all of the data we have gathered ourselves, both through manual car counts and surveys.
+This repository looks into the potential of congestion pricing in Irish cities, and it holds all of the data we have gathered ourselves, both through manual car counts and surveys.
 
 ## Usage
 
